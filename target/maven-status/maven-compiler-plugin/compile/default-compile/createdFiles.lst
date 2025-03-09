@@ -1,0 +1,5 @@
+com\weather\tracker\service\WeatherService.class
+com\weather\tracker\controller\TrackerController.class
+com\weather\tracker\model\WeatherResponse.class
+com\weather\tracker\TrackerApplication.class
+com\weather\tracker\model\AirQualityResponse.class
