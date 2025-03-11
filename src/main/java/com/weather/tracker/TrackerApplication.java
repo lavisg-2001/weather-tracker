@@ -8,6 +8,10 @@ public class TrackerApplication {
 
 	public static void main(String[] args) {
 		SpringApplication.run(TrackerApplication.class, args);
+
+		//    new SpringApplicationBuilder(MyApplication.class)
+		//        .web(WebApplicationType.NONE) -> disable embedded server
+		//        .run(args);
 	}
 
 }

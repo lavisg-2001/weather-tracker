@@ -15,6 +15,7 @@ import java.io.IOException;
 
 @RestController
 @RequestMapping("/api")
+@CrossOrigin(origins = "http://localhost:4200")
 public class TrackerController {
 
     @Autowired
@@ -29,10 +30,9 @@ public class TrackerController {
             WeatherResponse weatherResponse = weatherService.getWeather(city);
             return ResponseEntity.ok(weatherResponse);
         } catch (HttpClientErrorException e) {
-            // Handle specific HTTP errors
             if (e.getStatusCode() == HttpStatus.UNAUTHORIZED) {
                 return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-                        .body(null); // You can return a custom error message if needed
+                        .body(null);
             } else {
                 throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Failed to fetch weather data", e);
             }
@@ -47,10 +47,9 @@ public class TrackerController {
             AirQualityResponse airQualityResponse = weatherService.getAirQuality(lat, lon);
             return ResponseEntity.ok(airQualityResponse);
         } catch (HttpClientErrorException e) {
-            // Handle specific HTTP errors
             if (e.getStatusCode() == HttpStatus.UNAUTHORIZED) {
                 return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-                        .body(null); // You can return a custom error message if needed
+                        .body(null);
             } else {
                 throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Failed to fetch air quality data", e);
             }
@@ -59,8 +58,8 @@ public class TrackerController {
         }
     }
 
-    @RequestMapping(value = "/air-quality/{city}", method = RequestMethod.GET)
-    public ResponseEntity<AirQualityResponse> getAirQualityByCity(@PathVariable String city) {
+    @RequestMapping(value = "/air-quality", method = RequestMethod.GET)
+    public ResponseEntity<AirQualityResponse> getAirQualityByCity(@RequestParam String city) {
         try {
             double[] coordinates = geocodingService.getCoordinates(city);
             double lat = coordinates[0];

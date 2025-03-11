@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.weather.tracker.model.AirQualityResponse;
 import com.weather.tracker.model.WeatherResponse;
+import com.weather.tracker.utils.AirQualityUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.beans.factory.annotation.Value;
@@ -16,10 +17,6 @@ public class WeatherService {
     @Value("${openweathermap.api.key}")
     private String apiKey;
 
-//    @Value("${geocoding.api.key}")
-//    private String goeApiKey;
-
-//    private final String API_KEY = "your_openweathermap_api_key";
     private final RestTemplate restTemplate = new RestTemplate();
     private final ObjectMapper objectMapper = new ObjectMapper();
 
@@ -49,7 +46,22 @@ public class WeatherService {
         String url = String.format(AIR_QUALITY_URL, lat, lon, apiKey);
         String response = restTemplate.getForObject(url, String.class);
         JsonNode root = objectMapper.readTree(response);
-        return parseAirQualityResponse(root);
+
+        // Parse pollutant concentrations
+        JsonNode components = root.path("list").get(0).path("components");
+        double so2 = components.path("so2").asDouble();
+        double no2 = components.path("no2").asDouble();
+        double pm10 = components.path("pm10").asDouble();
+        double pm25 = components.path("pm2_5").asDouble();
+        double o3 = components.path("o3").asDouble();
+        double co = components.path("co").asDouble();
+
+        // Calculate AQI and qualitative name
+        int aqi = AirQualityUtils.calculateAQI(so2, no2, pm10, pm25, o3, co);
+        String qualitativeName = AirQualityUtils.getQualitativeName(aqi);
+
+        // Return the enhanced response
+        return new AirQualityResponse(aqi, qualitativeName, pm25, pm10, co, no2, so2, o3);
     }
 
     private WeatherResponse parseWeatherResponse(JsonNode root) {
@@ -61,16 +73,4 @@ public class WeatherService {
         );
     }
 
-    private AirQualityResponse parseAirQualityResponse(JsonNode root) {
-        JsonNode components = root.get("list").get(0).get("components");
-        return new AirQualityResponse(
-                root.get("list").get(0).get("main").get("aqi").asInt(),
-                components.get("pm2_5").asDouble(),
-                components.get("pm10").asDouble(),
-                components.get("co").asDouble(),
-                components.get("no2").asDouble(),
-                components.get("so2").asDouble(),
-                components.get("o3").asDouble()
-        );
-    }
 }
