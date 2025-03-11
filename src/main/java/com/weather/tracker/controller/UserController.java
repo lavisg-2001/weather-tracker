@@ -2,6 +2,7 @@ package com.weather.tracker.controller;
 
 import com.weather.tracker.dao.RegisteredUser;
 import com.weather.tracker.exceptions.CustomException;
+import com.weather.tracker.service.JwtService;
 import com.weather.tracker.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -21,6 +22,9 @@ public class UserController {
     @Autowired
     AuthenticationManager authenticationManager;
 
+    @Autowired
+    JwtService jwtService;
+
     BCryptPasswordEncoder encoder = new BCryptPasswordEncoder(12);
 
     @PostMapping("/register")
@@ -34,9 +38,16 @@ public class UserController {
         Authentication authentication = authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(
                 user.getUsername(), user.getPassword()));
         if(authentication.isAuthenticated()){
-            return "Login Success";
+            return jwtService.generateToken(user.getUsername());
         } else{
             return "Login Failure";
         }
     }
+
+    //OAuth2
+//    @GetMapping("/login")
+//    public String home(){
+//        return "hey there...Welcome to WeatherTracker!";
+//    }
+
 }
